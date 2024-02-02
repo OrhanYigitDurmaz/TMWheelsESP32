@@ -14,6 +14,8 @@
  *    
  * V1.01 October 2022: tiny bug fixed, 'button pressed' was sent continuously over USB as long as
  * a button was pressed (telling 'button pressed' once is enough)
+ *
+ / February 2024: Added ESP32 Bluetooth support. 
 */
 
 /*
@@ -142,18 +144,18 @@ void loop() {
 
    if (bleGamepad.isConnected()) {
     
-  // tell the wheel, that we are ready to read the data now
+    // tell the wheel, that we are ready to read the data now
     digitalWrite(slaveSelectPin, LOW);
-  // the chips in the wheel need some time to wake up
+    // the chips in the wheel need some time to wake up
     delayMicroseconds(40);
   
-  //read the wheel's 5 bytes
+    //read the wheel's 5 bytes
     for(int i=0; i<5; i++) {
       currBytes[i] = ~hspi->transfer(0x00); //spi->transfer(data);
       delayMicroseconds(40);
     }
 
-  // release the wheel
+    // release the wheel
     digitalWrite(slaveSelectPin, HIGH);
     delayMicroseconds(40);
   
@@ -165,10 +167,10 @@ void loop() {
       Serial.println();
     }
 
-  // Check for sane input: is the wheel plugged in?
-  // Unplugged: first byte has all bits set or unset
-  // When plugged in F1 and Ferrari 599xx wheel has bits 7, 6, 5 set as 101 (160 dec)
-  // Sparco R383 has bits 7, 6, 5 set as 001 (32 dec)
+    // Check for sane input: is the wheel plugged in?
+    // Unplugged: first byte has all bits set or unset
+    // When plugged in F1 and Ferrari 599xx wheel has bits 7, 6, 5 set as 101 (160 dec)
+    // Sparco R383 has bits 7, 6, 5 set as 001 (32 dec)
     wheelbyte = currBytes[0] & B11100000;
     fourthbyte = currBytes[3] & B00100000;
     fifthbyte = currBytes[4] & B00001111;

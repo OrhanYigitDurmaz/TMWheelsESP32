@@ -82,10 +82,6 @@
 
 #include <SPI.h>
 #include <BleGamepad.h>
-
-BleGamepad bleGamepad;
-
-
 // 21 buttons, 1 hatswitch
 
   
@@ -103,7 +99,8 @@ int F1Btn[] = {4,-1,-1,-1,0,1,2,3,  12,5,6,7,8,9,10,11,  17,33,32,34,31,18,19,20
 
 SPIClass * hspi = NULL;
 
-
+BleGamepad bleGamepad("Thrustmaster Wheel ESP32", "OrhanYigitDurmaz", 100);
+BleGamepadConfiguration bleGamepadConfig;
 
 void setup() {
   //input from wheel
@@ -119,8 +116,9 @@ void setup() {
 
   //output to joystick
   //Joystick.begin();
-  BleGamepadConfiguration bleGamepadConfig;
+  
   bleGamepadConfig.setAutoReport(false);
+  bleGamepadConfig.setControllerType(CONTROLLER_TYPE_GAMEPAD);
   bleGamepadConfig.setButtonCount(21); //21 buttons, 1 hat
   bleGamepadConfig.setHatSwitchCount(1);
   bleGamepad.begin(&bleGamepadConfig);

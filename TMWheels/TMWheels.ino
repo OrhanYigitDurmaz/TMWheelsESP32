@@ -159,7 +159,7 @@ void loop() {
     delayMicroseconds(40);
   
     //read the wheel's 5 bytes
-    for(int i=0; i<5; i++) {
+    for(int i = 0; i < 5; i++) {
       //currBytes[i] = ~SPI1.transfer(0x00); //spi->transfer(data);
       currBytes[i] = ~hspi->transfer(0x00);
       delayMicroseconds(40);
@@ -170,7 +170,7 @@ void loop() {
     delayMicroseconds(40);
   
     if (debugging) {
-      for(int i=0; i<5; i++) {
+      for(int i = 0; i < 5; i++) {
         printBinary(currBytes[i]);
         Serial.print("\t");
       }
@@ -192,11 +192,11 @@ void loop() {
         
      // Reset all buttons to avoid stuck buttons when unplugged
       if (buttonsreset == false) {
-          bleGamepad.setHat1(HAT_CENTERED);  // release hatswitch
-          for(int b=0; b<21; b++) {    // one button at a time
-            setButton(b, 0);    // release the button
-          }
-          buttonsreset = true;           // do it just once
+        bleGamepad.setHat1(HAT_CENTERED);  // release hatswitch
+        for(int b = 0; b < 21; b++) {    // one button at a time 0 to 20
+          setButton(b, 0);    // release the button
+        }
+        buttonsreset = true;           // do it just once
       }
      
       if (debugging) Serial.println("Wheel not plugged in, waiting...");
@@ -207,7 +207,7 @@ void loop() {
       delayMicroseconds(40); 
      
      // read the wheel's 5 bytes
-      for(int i=0; i<5; i++) {
+      for(int i = 0; i < 5; i++) {
         //currBytes[i] = ~SPI1.transfer(0x00);
         currBytes[i] = ~hspi->transfer(0x00);
         delayMicroseconds(40);
@@ -221,6 +221,7 @@ void loop() {
         printBinary(currBytes[i]);
         Serial.print("\t");
       }
+
       if (debugging) Serial.println();
 
       wheelbyte = currBytes[0] & B11100000;  // same as above, for identifying the wheel below
@@ -234,22 +235,30 @@ void loop() {
     }
 
     if (wheelIdentified == false) {
+
       if ((wheelbyte == 160) and (fifthbyte == 0)) {
       wheelID = 2;                                           // Ferrari 599xx wheel
       memcpy(bit2btn,F599Btn,sizeof(F599Btn));               // button numbers 599xx wheel to working array
       wheelIdentified = true;
-      } else if (wheelbyte == 32) {
-              if (((fourthbyte == 0) and (fifthbyte == 0)) or ((currBytes[3] == 255) and (currBytes[4] == 255))) {
-                wheelID = 3;                               // Sparco R383 connected
-                memcpy(bit2btn,R383Btn,sizeof(R383Btn));   // button numbers R383 wheel to working array
-                wheelIdentified = true;
-              } else if ((wheelbyte == 32) and (fifthbyte == 15)) {      // F1 wheel sets last four bits of byte 5 as 1, 599xx wheel sets byte 5 as zero
-                      wheelID = 1;                          // F1 wheel connected
-                      memcpy(bit2btn,F1Btn,sizeof(F1Btn));  // button numbers F1 wheel to working array
-                      wheelIdentified = true;
-                    }
-              }
+      }
+
+    } else if (wheelbyte == 32) {
+
+      if (((fourthbyte == 0) and (fifthbyte == 0)) or ((currBytes[3] == 255) and (currBytes[4] == 255))) {
+        wheelID = 3;                               // Sparco R383 connected
+        memcpy(bit2btn,R383Btn,sizeof(R383Btn));   // button numbers R383 wheel to working array
+        wheelIdentified = true;
+      }
+      
+
+    } else if ((wheelbyte == 32) and (fifthbyte == 15)) {      // F1 wheel sets last four bits of byte 5 as 1, 599xx wheel sets byte 5 as zero
+    
+      wheelID = 1;                          // F1 wheel connected
+      memcpy(bit2btn,F1Btn,sizeof(F1Btn));  // button numbers F1 wheel to working array
+      wheelIdentified = true;
     }
+
+
 
     if (debugging) { 
       Serial.print(wheelbyte);
@@ -285,8 +294,6 @@ void loop() {
 
     prevJoyBtnState = joyBtnState;
 
-  } else {
-    digitalWrite(LED_BUILTIN, HIGH);
   }
 }
 

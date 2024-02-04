@@ -153,8 +153,6 @@ void printBinary(byte data) {
 void loop() {
 
    if (bleGamepad.isConnected()) {
-    bleGamepad.press(BUTTON_5);
-    
     // tell the wheel, that we are ready to read the data now
     digitalWrite(slaveSelectPin, LOW);
     // the chips in the wheel need some time to wake up

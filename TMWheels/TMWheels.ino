@@ -80,12 +80,15 @@
  * 0 - 1 when Dpad pressed        0 -
 */
 
+
 #include <SPI.h>
 #include <BleGamepad.h>
+
+
 // 21 buttons, 1 hatswitch
 
   
-const int slaveSelectPin = 7;
+const int slaveSelectPin = 15;
 byte pos[] = {0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01};
 byte currBytes[] = {0x00, 0x00, 0x00, 0x00, 0x00};
 byte prevBytes[] = {0x00, 0x00, 0x00, 0x00, 0x00};
@@ -97,25 +100,34 @@ int F599Btn[] = {-1,-1,-1,0,1,2,3,4,  5,6,7,8,9,-1,-1,12,  33,32,34,31,-1,-1,-1,
 int R383Btn[] = {-1,-1,-1,-1,-1,-1,-1,5,  1,4,8,-1,6,12,7,-1,  2,9,34,31,32,33,3,0,  -1,-1,-1,-1,-1,-1,-1,-1}; // button numbers R383 wheel
 int F1Btn[] = {4,-1,-1,-1,0,1,2,3,  12,5,6,7,8,9,10,11,  17,33,32,34,31,18,19,20,  -1,15,13,14,16,-1,-1,-1}; // button numbers F1 wheel
 
+//SPIClass SPI1(HSPI);
+
 SPIClass * hspi = NULL;
 
 BleGamepad bleGamepad("Thrustmaster Wheel ESP32", "OrhanYigitDurmaz", 100);
 BleGamepadConfiguration bleGamepadConfig;
 
-void setup() {
-  //input from wheel
-  Serial.begin(115200);
-  hspi = new SPIClass(HSPI);
-  
+#define HSPI_MISO   12
+#define HSPI_MOSI   13
+#define HSPI_SCLK   14
+#define HSPI_SS     15
 
+void setup() {
+  Serial.begin(115200);
+  
+  
+  //SPI1.begin();
+  //SPI1.beginTransaction(SPISettings(40000, MSBFIRST, SPI_MODE0));
+
+  hspi = new SPIClass(HSPI);
+  hspi->begin(HSPI_SCLK, HSPI_MISO, HSPI_MOSI, HSPI_SS);
   hspi->beginTransaction(SPISettings(40000, MSBFIRST, SPI_MODE0));
+
   //initialise hspi with default pins
-  //SCLK = 14, MISO = 12, MOSI = 13, SS = 15
-  hspi->begin();                 
+  //SCLK = 14, MISO = 12, MOSI = 13, SS = 15                 
   pinMode(slaveSelectPin, OUTPUT);
 
-  //output to joystick
-  //Joystick.begin();
+
   
   bleGamepadConfig.setAutoReport(false);
   bleGamepadConfig.setControllerType(CONTROLLER_TYPE_GAMEPAD);
@@ -141,6 +153,7 @@ void printBinary(byte data) {
 void loop() {
 
    if (bleGamepad.isConnected()) {
+    bleGamepad.press(BUTTON_5);
     
     // tell the wheel, that we are ready to read the data now
     digitalWrite(slaveSelectPin, LOW);
@@ -149,7 +162,8 @@ void loop() {
   
     //read the wheel's 5 bytes
     for(int i=0; i<5; i++) {
-      currBytes[i] = ~hspi->transfer(0x00); //spi->transfer(data);
+      //currBytes[i] = ~SPI1.transfer(0x00); //spi->transfer(data);
+      currBytes[i] = ~hspi->transfer(0x00);
       delayMicroseconds(40);
     }
 
@@ -196,6 +210,7 @@ void loop() {
      
      // read the wheel's 5 bytes
       for(int i=0; i<5; i++) {
+        //currBytes[i] = ~SPI1.transfer(0x00);
         currBytes[i] = ~hspi->transfer(0x00);
         delayMicroseconds(40);
       }
@@ -272,6 +287,8 @@ void loop() {
 
     prevJoyBtnState = joyBtnState;
 
+  } else {
+    digitalWrite(LED_BUILTIN, HIGH);
   }
 }
 
